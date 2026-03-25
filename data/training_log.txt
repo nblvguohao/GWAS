@@ -1,0 +1,172 @@
+============================================================
+PlantHGNN End-to-End Training Pipeline
+============================================================
+
+Device: cuda:0
+GPU: NVIDIA A100-SXM4-80GB
+GPU Memory: 85.1 GB
+
+============================================================
+Step 1: Creating Synthetic Data
+============================================================
+Creating synthetic data...
+  Samples: 200
+  SNPs: 1000
+  Genes: 1000
+  Traits: 3
+Synthetic data saved to data/synthetic
+  Train: 140 samples
+  Val: 30 samples
+  Test: 30 samples
+
+============================================================
+Step 2: Loading Data
+============================================================
+Loaded data:
+  SNP shape: torch.Size([200, 1000, 3])
+  Phenotype shape: torch.Size([200, 3])
+  Graph nodes: 1000
+  Networks: 3
+
+============================================================
+Step 3: Creating DataLoaders
+============================================================
+DataLoaders created:
+  Train batches: 5
+  Val batches: 1
+  Test batches: 1
+
+============================================================
+Step 4: Creating PlantHGNN Model
+============================================================
+Model created:
+  Total parameters: 5,066,374
+  Model size: 20.3 MB
+
+============================================================
+Step 5: Setup Training
+============================================================
+Training configuration:
+  Optimizer: AdamW (lr=0.001)
+  Scheduler: CosineAnnealingLR
+  Loss: MSE
+  Epochs: 10
+
+============================================================
+Step 6: Training for 10 Epochs
+============================================================
+
+Epoch 1/10:
+  Train Loss: 1.1336
+  Val PCC: 0.0202
+  Val MSE: 1.1086
+  LR: 0.000976
+
+Epoch 2/10:
+  Train Loss: 1.1444
+  Val PCC: 0.0744
+  Val MSE: 1.0986
+  LR: 0.000905
+
+Epoch 3/10:
+  Train Loss: 0.9944
+  Val PCC: 0.1566
+  Val MSE: 1.0659
+  LR: 0.000794
+
+Epoch 4/10:
+  Train Loss: 0.9791
+  Val PCC: 0.1884
+  Val MSE: 1.0768
+  LR: 0.000655
+
+Epoch 5/10:
+  Train Loss: 1.0335
+  Val PCC: 0.1236
+  Val MSE: 1.0824
+  LR: 0.000500
+
+Epoch 6/10:
+  Train Loss: 1.0336
+  Val PCC: 0.0488
+  Val MSE: 1.0809
+  LR: 0.000345
+
+Epoch 7/10:
+  Train Loss: 1.0553
+  Val PCC: 0.0273
+  Val MSE: 1.0781
+  LR: 0.000206
+
+Epoch 8/10:
+  Train Loss: 1.0058
+  Val PCC: 0.0130
+  Val MSE: 1.0781
+  LR: 0.000095
+
+Epoch 9/10:
+  Train Loss: 0.9580
+  Val PCC: 0.0067
+  Val MSE: 1.0799
+  LR: 0.000024
+
+Epoch 10/10:
+  Train Loss: 1.0379
+  Val PCC: 0.0041
+  Val MSE: 1.0798
+  LR: 0.000000
+
+============================================================
+Step 7: Final Test Evaluation
+============================================================
+
+Test Results:
+  Pearson: [np.float32(0.023463031), np.float32(0.2312259), np.float32(0.07983849)]
+  Spearman: [np.float64(-0.0028921023359288096), np.float64(0.28186874304783094), np.float64(0.0037819799777530586)]
+  MSE: 0.8333
+  MAE: 0.7506
+
+============================================================
+Step 8: Training Analysis
+============================================================
+
+Training Loss Progression:
+  Epoch 1: 1.1336
+  Epoch 2: 1.1444
+  Epoch 3: 0.9944
+  Epoch 4: 0.9791
+  Epoch 5: 1.0335
+  Epoch 6: 1.0336
+  Epoch 7: 1.0553
+  Epoch 8: 1.0058
+  Epoch 9: 0.9580
+  Epoch 10: 1.0379
+
+Loss Decrease: 0.0957 (8.4%)
+✅ Training loss decreased - model is learning!
+Traceback (most recent call last):
+  File "/data/lgh/GWAS/scripts/prepare_and_train.py", line 429, in <module>
+    main()
+    ~~~~^^
+  File "/data/lgh/GWAS/scripts/prepare_and_train.py", line 416, in main
+    json.dump(history_json, f, indent=2)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/miniconda3/lib/python3.13/json/__init__.py", line 179, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "/home/user/miniconda3/lib/python3.13/json/encoder.py", line 433, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/home/user/miniconda3/lib/python3.13/json/encoder.py", line 407, in _iterencode_dict
+    yield from chunks
+  File "/home/user/miniconda3/lib/python3.13/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/home/user/miniconda3/lib/python3.13/json/encoder.py", line 407, in _iterencode_dict
+    yield from chunks
+  File "/home/user/miniconda3/lib/python3.13/json/encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "/home/user/miniconda3/lib/python3.13/json/encoder.py", line 440, in _iterencode
+    o = _default(o)
+  File "/home/user/miniconda3/lib/python3.13/json/encoder.py", line 180, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type float32 is not JSON serializable

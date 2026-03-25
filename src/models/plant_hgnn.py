@@ -128,6 +128,9 @@ class PlantHGNN(nn.Module):
         # SNP encoder
         self.snp_encoder = SNPEncoder(n_snps, snp_encoding_dim=3, d_model=d_model)
         
+        # Node feature projection (to handle variable input dimensions)
+        self.node_projection = nn.Linear(64, d_model)  # Project node features to d_model
+        
         # Multi-view GCN encoder
         if n_views > 1:
             self.multi_view_gcn = MultiViewGCNEncoder(
@@ -226,9 +229,12 @@ class PlantHGNN(nn.Module):
         edge_index_list = graph_data['edge_index_list']
         edge_weight_list = graph_data.get('edge_weight_list', None)
         
+        # Project node features to d_model dimension
+        node_features_projected = self.node_projection(node_features)
+        
         if isinstance(self.multi_view_gcn, MultiViewGCNEncoder):
             gcn_embed, network_attn = self.multi_view_gcn(
-                node_features, edge_index_list, edge_weight_list, return_attention=True
+                node_features_projected, edge_index_list, edge_weight_list, return_attention=True
             )
         else:
             # Single view
