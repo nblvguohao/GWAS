@@ -1,0 +1,9 @@
+# Ablation: Single view GCN (like NetGP)
+
+extends: ../base_config.yaml
+
+model:
+  n_views: 1
+
+experiment_name: ablation_single_view
+output_dir: experiments/results/ablation/single_view/

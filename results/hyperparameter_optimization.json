@@ -1,0 +1,104 @@
+{
+  "all_results": [
+    {
+      "config": {
+        "name": "baseline",
+        "d_model": 128,
+        "n_layers": 8,
+        "dropout": 0.2,
+        "lr": 0.001,
+        "batch_size": 32,
+        "weight_decay": 0.0
+      },
+      "n_params": 5068259,
+      "best_epoch": 1,
+      "best_val_pcc": 0.0,
+      "test_pcc": 0.0,
+      "test_pcc_avg": 0.0
+    },
+    {
+      "config": {
+        "name": "larger_model",
+        "d_model": 256,
+        "n_layers": 6,
+        "dropout": 0.3,
+        "lr": 0.0005,
+        "batch_size": 32,
+        "weight_decay": 1e-05
+      },
+      "n_params": 9020579,
+      "best_epoch": 1,
+      "best_val_pcc": 0.0,
+      "test_pcc": 0.0,
+      "test_pcc_avg": 0.0
+    },
+    {
+      "config": {
+        "name": "deeper_model",
+        "d_model": 128,
+        "n_layers": 12,
+        "dropout": 0.25,
+        "lr": 0.0008,
+        "batch_size": 32,
+        "weight_decay": 1e-05
+      },
+      "n_params": 7440867,
+      "best_epoch": 1,
+      "best_val_pcc": 0.0,
+      "test_pcc": 0.0,
+      "test_pcc_avg": 0.0
+    },
+    {
+      "config": {
+        "name": "lower_lr",
+        "d_model": 128,
+        "n_layers": 8,
+        "dropout": 0.2,
+        "lr": 0.0003,
+        "batch_size": 32,
+        "weight_decay": 0.0001
+      },
+      "n_params": 5068259,
+      "best_epoch": 1,
+      "best_val_pcc": 0.0,
+      "test_pcc": 0.0,
+      "test_pcc_avg": 0.0
+    },
+    {
+      "config": {
+        "name": "higher_dropout",
+        "d_model": 128,
+        "n_layers": 8,
+        "dropout": 0.4,
+        "lr": 0.001,
+        "batch_size": 32,
+        "weight_decay": 0.0
+      },
+      "n_params": 5068259,
+      "best_epoch": 1,
+      "best_val_pcc": 0.0,
+      "test_pcc": 0.0,
+      "test_pcc_avg": 0.0
+    }
+  ],
+  "best_result": {
+    "config": {
+      "name": "baseline",
+      "d_model": 128,
+      "n_layers": 8,
+      "dropout": 0.2,
+      "lr": 0.001,
+      "batch_size": 32,
+      "weight_decay": 0.0
+    },
+    "n_params": 5068259,
+    "best_epoch": 1,
+    "best_val_pcc": 0.0,
+    "test_pcc": 0.0,
+    "test_pcc_avg": 0.0
+  },
+  "baseline_pcc": 0.328,
+  "gblup_pcc": 0.538,
+  "improvement": -0.328,
+  "gap_to_gblup": 0.538
+}

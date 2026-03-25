@@ -1,1 +1,4 @@
-# PlantHGNN source package
+"""PlantHGNN: Plant Heterogeneous Graph Neural Network for Genomic Prediction"""
+
+__version__ = "0.1.0"
+__author__ = "Lyu"

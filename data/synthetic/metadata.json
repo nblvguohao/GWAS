@@ -1,0 +1,7 @@
+{
+  "n_samples": 200,
+  "n_snps": 1000,
+  "n_genes": 1000,
+  "n_traits": 3,
+  "n_gene_sets": 100
+}

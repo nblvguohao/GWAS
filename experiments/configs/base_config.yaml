@@ -1,0 +1,54 @@
+# Base configuration for PlantHGNN experiments
+
+model:
+  name: PlantHGNN
+  d_model: 128
+  n_transformer_layers: 8  # Must be divisible by n_attnres_blocks
+  n_attnres_blocks: 8
+  n_gcn_layers: 2
+  n_views: 3
+  dropout: 0.2
+  use_heterogeneous: true
+  use_attnres: true
+  use_functional_embed: true
+  use_structural_encode: true
+
+training:
+  optimizer: adamw
+  lr: 0.001
+  weight_decay: 0.0001
+  batch_size: 32
+  max_epochs: 200
+  early_stopping_patience: 20
+  loss_type: mse
+  scheduler: cosine_annealing
+  gradient_clip: 1.0
+
+evaluation:
+  metrics:
+    - pearson
+    - spearman
+    - mse
+    - mae
+    - ndcg
+  n_folds: 5
+  seeds: [42, 123, 456, 789, 1024]
+
+data:
+  split_strategy: random  # random, chromosome, line
+  missing_threshold: 0.1
+  maf_threshold: 0.05
+  pcs_corr_threshold: 0.3
+  pcs_vif_threshold: 10
+  
+hardware:
+  device: cuda
+  num_workers: 4
+  pin_memory: true
+  mixed_precision: false
+
+logging:
+  use_wandb: false
+  log_interval: 10
+  save_checkpoints: true
+  checkpoint_dir: experiments/results/checkpoints
