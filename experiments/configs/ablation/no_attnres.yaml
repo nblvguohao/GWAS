@@ -1,0 +1,9 @@
+# Ablation: Remove AttnRes (use standard residuals)
+
+extends: ../base_config.yaml
+
+model:
+  use_attnres: false
+
+experiment_name: ablation_no_attnres
+output_dir: experiments/results/ablation/no_attnres/

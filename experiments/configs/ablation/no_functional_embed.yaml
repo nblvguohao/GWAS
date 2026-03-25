@@ -1,0 +1,9 @@
+# Ablation: Remove functional embedding
+
+extends: ../base_config.yaml
+
+model:
+  use_functional_embed: false
+
+experiment_name: ablation_no_functional_embed
+output_dir: experiments/results/ablation/no_functional_embed/
