@@ -1,0 +1,15 @@
+================================================================================
+PlantHGNN vs GBLUP Performance Summary
+================================================================================
+
+                 Metric  GBLUP PlantHGNN  Winner
+         Test PCC (avg) 0.5380    0.3281 GBLUP ✓
+   Validation PCC (avg) 0.5825    0.3429 GBLUP ✓
+               Test MSE    N/A    0.7892       -
+               Test MAE    N/A    0.6831       -
+Training Time (seconds)  351.9     ~2400 GBLUP ✓
+       Model Parameters      0 5,068,259 GBLUP ✓
+
+================================================================================
+Conclusion: GBLUP outperforms PlantHGNN on all metrics
+================================================================================

@@ -1,0 +1,20 @@
+{
+  "result": {
+    "config": {
+      "d_model": 128,
+      "n_layers": 8,
+      "dropout": 0.3,
+      "lr": 0.0005,
+      "batch_size": 32,
+      "weight_decay": 0.0001
+    },
+    "best_val_pcc": 0.0,
+    "test_pcc": 0.0,
+    "test_pcc_avg": 0.0,
+    "best_epoch": 1
+  },
+  "baseline_pcc": 0.328,
+  "gblup_pcc": 0.538,
+  "improvement": -0.328,
+  "gap_to_gblup": 0.538
+}

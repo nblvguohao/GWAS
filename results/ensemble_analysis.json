@@ -1,0 +1,185 @@
+{
+  "individual_performance": {
+    "gblup_pcc": 0.5380132311120698,
+    "planthgnn_pcc": 0.3281383858411573
+  },
+  "all_configurations": [
+    {
+      "name": "GBLUP only",
+      "w_gblup": 1.0,
+      "w_planthgnn": 0.0,
+      "scenario": "Low corr",
+      "rho": 0.3,
+      "pcc_ensemble": 0.5380132311120698
+    },
+    {
+      "name": "GBLUP only",
+      "w_gblup": 1.0,
+      "w_planthgnn": 0.0,
+      "scenario": "Med corr",
+      "rho": 0.5,
+      "pcc_ensemble": 0.5380132311120698
+    },
+    {
+      "name": "GBLUP only",
+      "w_gblup": 1.0,
+      "w_planthgnn": 0.0,
+      "scenario": "High corr",
+      "rho": 0.7,
+      "pcc_ensemble": 0.5380132311120698
+    },
+    {
+      "name": "90% GBLUP",
+      "w_gblup": 0.9,
+      "w_planthgnn": 0.1,
+      "scenario": "Low corr",
+      "rho": 0.3,
+      "pcc_ensemble": 0.6103603303974674
+    },
+    {
+      "name": "90% GBLUP",
+      "w_gblup": 0.9,
+      "w_planthgnn": 0.1,
+      "scenario": "Med corr",
+      "rho": 0.5,
+      "pcc_ensemble": 0.5864079424512163
+    },
+    {
+      "name": "90% GBLUP",
+      "w_gblup": 0.9,
+      "w_planthgnn": 0.1,
+      "scenario": "High corr",
+      "rho": 0.7,
+      "pcc_ensemble": 0.5614346061803035
+    },
+    {
+      "name": "80% GBLUP",
+      "w_gblup": 0.8,
+      "w_planthgnn": 0.2,
+      "scenario": "Low corr",
+      "rho": 0.3,
+      "pcc_ensemble": 0.658117802819112
+    },
+    {
+      "name": "80% GBLUP",
+      "w_gblup": 0.8,
+      "w_planthgnn": 0.2,
+      "scenario": "Med corr",
+      "rho": 0.5,
+      "pcc_ensemble": 0.6181894760093576
+    },
+    {
+      "name": "80% GBLUP",
+      "w_gblup": 0.8,
+      "w_planthgnn": 0.2,
+      "scenario": "High corr",
+      "rho": 0.7,
+      "pcc_ensemble": 0.5754975361458922
+    },
+    {
+      "name": "70% GBLUP",
+      "w_gblup": 0.7,
+      "w_planthgnn": 0.3,
+      "scenario": "Low corr",
+      "rho": 0.3,
+      "pcc_ensemble": 0.686437298844767
+    },
+    {
+      "name": "70% GBLUP",
+      "w_gblup": 0.7,
+      "w_planthgnn": 0.3,
+      "scenario": "Med corr",
+      "rho": 0.5,
+      "pcc_ensemble": 0.6358538328013874
+    },
+    {
+      "name": "70% GBLUP",
+      "w_gblup": 0.7,
+      "w_planthgnn": 0.3,
+      "scenario": "High corr",
+      "rho": 0.7,
+      "pcc_ensemble": 0.5808821120770802
+    },
+    {
+      "name": "60% GBLUP",
+      "w_gblup": 0.6,
+      "w_planthgnn": 0.4,
+      "scenario": "Low corr",
+      "rho": 0.3,
+      "pcc_ensemble": 0.6976898318711819
+    },
+    {
+      "name": "60% GBLUP",
+      "w_gblup": 0.6,
+      "w_planthgnn": 0.4,
+      "scenario": "Med corr",
+      "rho": 0.5,
+      "pcc_ensemble": 0.6405699651781533
+    },
+    {
+      "name": "60% GBLUP",
+      "w_gblup": 0.6,
+      "w_planthgnn": 0.4,
+      "scenario": "High corr",
+      "rho": 0.7,
+      "pcc_ensemble": 0.5778309952574743
+    },
+    {
+      "name": "Equal weight",
+      "w_gblup": 0.5,
+      "w_planthgnn": 0.5,
+      "scenario": "Low corr",
+      "rho": 0.3,
+      "pcc_ensemble": 0.6927076231288857
+    },
+    {
+      "name": "Equal weight",
+      "w_gblup": 0.5,
+      "w_planthgnn": 0.5,
+      "scenario": "Med corr",
+      "rho": 0.5,
+      "pcc_ensemble": 0.6326275199903194
+    },
+    {
+      "name": "Equal weight",
+      "w_gblup": 0.5,
+      "w_planthgnn": 0.5,
+      "scenario": "High corr",
+      "rho": 0.7,
+      "pcc_ensemble": 0.5662078301801678
+    },
+    {
+      "name": "PlantHGNN only",
+      "w_gblup": 0.0,
+      "w_planthgnn": 1.0,
+      "scenario": "Low corr",
+      "rho": 0.3,
+      "pcc_ensemble": 0.3281383858411575
+    },
+    {
+      "name": "PlantHGNN only",
+      "w_gblup": 0.0,
+      "w_planthgnn": 1.0,
+      "scenario": "Med corr",
+      "rho": 0.5,
+      "pcc_ensemble": 0.3281383858411575
+    },
+    {
+      "name": "PlantHGNN only",
+      "w_gblup": 0.0,
+      "w_planthgnn": 1.0,
+      "scenario": "High corr",
+      "rho": 0.7,
+      "pcc_ensemble": 0.3281383858411575
+    }
+  ],
+  "recommended": {
+    "weights": {
+      "gblup": 0.6,
+      "planthgnn": 0.4
+    },
+    "expected_pcc": 0.6405699651781533,
+    "improvement_over_gblup": 0.10255673406608357,
+    "improvement_over_planthgnn": 0.31243157933699606
+  }
+}
