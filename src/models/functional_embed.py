@@ -32,10 +32,13 @@ class FunctionalEmbedding(nn.Module):
         
         # Gene set membership matrix
         if gene_set_matrix is not None:
-            self.register_buffer('gene_set_matrix', torch.tensor(gene_set_matrix, dtype=torch.float))
+            if isinstance(gene_set_matrix, torch.Tensor):
+                self.register_buffer('gene_set_matrix', gene_set_matrix.detach().clone().float())
+            else:
+                self.register_buffer('gene_set_matrix', torch.tensor(gene_set_matrix, dtype=torch.float))
         else:
             # Random initialization for testing
-            self.register_buffer('gene_set_matrix', torch.rand(n_genes, n_gene_sets) > 0.9)
+            self.register_buffer('gene_set_matrix', (torch.rand(n_genes, n_gene_sets) > 0.9).float())
         
         # Learnable gene set embeddings
         self.gene_set_embeddings = nn.Parameter(torch.randn(n_gene_sets, embedding_dim))

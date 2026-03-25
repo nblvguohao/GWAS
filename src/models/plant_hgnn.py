@@ -327,13 +327,15 @@ def test_plant_hgnn():
         'pagerank_scores': pagerank_scores
     }
     
-    # Create model
+    # Create model (fix: n_layers must be divisible by n_blocks)
     model = PlantHGNN(
         n_snps=n_snps,
         n_genes=n_genes,
         n_gene_sets=n_gene_sets,
         n_traits=n_traits,
-        d_model=d_model
+        d_model=d_model,
+        n_transformer_layers=8,  # Must be divisible by n_attnres_blocks (8)
+        n_attnres_blocks=8
     )
     
     print(f"Model parameters: {sum(p.numel() for p in model.parameters()):,}")

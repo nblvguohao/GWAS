@@ -3,7 +3,7 @@
 model:
   name: PlantHGNN
   d_model: 128
-  n_transformer_layers: 6
+  n_transformer_layers: 8  # Must be divisible by n_attnres_blocks
   n_attnres_blocks: 8
   n_gcn_layers: 2
   n_views: 3
