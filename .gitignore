@@ -1,0 +1,45 @@
+# 数据文件（不入库，太大）
+data/raw/
+data/processed/
+
+# 模型权重
+models/
+*.pth
+*.pt
+*.ckpt
+
+# Python缓存
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 大型文档文件
+*.pdf
+*.zip
+*.tar.gz
+*.gz
+
+# 图片（结果图除外）
+*.png
+*.jpg
+*.jpeg
+
+# 日志
+*.log
+wandb/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Claude内存目录
+.claude/
+src/models/__pycache__/
