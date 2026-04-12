@@ -5,17 +5,25 @@
 步骤：
   1. 合并各性状的selected SNP位置，映射到水稻基因（±20kb窗口）
   2. 构建基因-基因PPI邻接矩阵（STRING v12, score>700）
-  3. 对每个trait+split：计算每个基因的SNP特征均值
+  3. 对每个trait+split：计算每个基因的多维SNP特征（5维）
   4. 保存图数据（稀疏邻接 + 基因特征矩阵）
 
 输出：
   data/processed/gstp007/graph/
-    ├── ppi_adj.npz           (n_genes, n_genes) 稀疏邻接矩阵
-    ├── gene_list.txt         基因ID列表
+    ├── ppi_adj.npz              (n_genes, n_genes) 稀疏邻接矩阵
+    ├── gene_list.txt            基因ID列表
+    ├── global_gene_feat_v2.npy  (n_samples, n_genes, 5) 多维基因特征缓存
     └── {trait}/
-        ├── gene_feat_train.npy  (n_train, n_genes) 基因特征
-        ├── gene_feat_val.npy
-        └── gene_feat_test.npy
+        ├── gene_feat_v2_train.npy  (n_train, n_genes, 5) 多维基因特征
+        ├── gene_feat_v2_val.npy    5维: [mean, std, max, min, log_count]
+        └── gene_feat_v2_test.npy
+
+gene_feat维度说明（F=5）：
+  F0 mean      — 基因区间内所有SNP的均值（平均等位基因效应）
+  F1 std       — SNP值的标准差（基因内遗传多样性）
+  F2 max       — SNP最大值（峰值等位基因信号）
+  F3 min       — SNP最小值（最小等位基因信号）
+  F4 log_count — log(SNP数+1) 归一化（基因SNP密度，结构特征）
 """
 
 import numpy as np
@@ -30,13 +38,16 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
 logger = logging.getLogger(__name__)
 
+# PLINK BED文件路径（用于全基因组SNP提取）
+PLINK_BASE = Path('E:/GWAS/data/raw/gstp007/1495Hybrid_MSUv7')
+
 DATA_DIR   = Path('E:/GWAS/data')
 NET_DIR    = DATA_DIR / 'raw' / 'networks'
 PROC_DIR   = DATA_DIR / 'processed' / 'gstp007'
 GRAPH_DIR  = PROC_DIR / 'graph'
 GRAPH_DIR.mkdir(parents=True, exist_ok=True)
 
-GENE_WINDOW = 20_000   # ±20kb SNP→gene映射窗口
+GENE_WINDOW = 100_000   # ±100kb SNP→gene映射窗口
 
 TRAITS = [
     'Plant_Height', 'Grain_Length', 'Grain_Width',
@@ -221,61 +232,174 @@ def build_ppi_adjacency(snp_to_gene: pd.DataFrame,
 # Step 4: 计算基因特征矩阵
 # ══════════════════════════════════════════════════════════════════════════════
 
-def build_gene_features(trait: str, snp_to_gene: pd.DataFrame,
-                         gene_list: list) -> bool:
+def load_global_gene_features(snp_to_gene: pd.DataFrame, gene_list: list,
+                               bim_df: pd.DataFrame) -> np.ndarray:
     """
-    为指定性状计算各split的基因特征矩阵。
-    gene_feat[sample, gene] = mean(SNP values of SNPs mapped to that gene)
+    从BED文件读取所有30K SNP（映射到PPI基因的），构建全样本多维基因特征矩阵。
+
+    返回: (n_samples, n_genes, 5) 多维基因特征矩阵
+         5维: [mean, std, max, min, log_count]
+    """
+    cache_path = GRAPH_DIR / 'global_gene_feat_v2.npy'
+    if cache_path.exists():
+        logger.info("加载缓存多维全局基因特征矩阵...")
+        feat = np.load(cache_path)
+        logger.info(f"  缓存shape: {feat.shape}")
+        return feat
+
+    logger.info("从BED文件构建多维全局基因特征矩阵（覆盖所有30K SNP）...")
+
+    try:
+        from bed_reader import open_bed
+    except ImportError:
+        raise ImportError("请安装 bed_reader: pip install bed-reader")
+
+    gene2idx = {g: i for i, g in enumerate(gene_list)}
+    n_genes = len(gene_list)
+
+    # 仅保留映射到PPI基因的SNP
+    stg_ppi = snp_to_gene[snp_to_gene['gene_id'].isin(gene2idx)].copy()
+    logger.info(f"映射到PPI基因的SNP: {len(stg_ppi):,} 行, {stg_ppi['snp_id'].nunique():,} 唯一SNP, "
+                f"覆盖 {stg_ppi['gene_id'].nunique():,}/{n_genes} 基因")
+
+    # 在BIM文件中找对应行号
+    bim_snp_id = bim_df['chr'].astype(str) + '_' + bim_df['pos'].astype(str)
+    snp_id_to_bim_idx = dict(zip(bim_snp_id, range(len(bim_df))))
+
+    stg_ppi = stg_ppi.copy()
+    stg_ppi['bim_idx'] = stg_ppi['snp_id'].map(snp_id_to_bim_idx)
+    stg_ppi = stg_ppi.dropna(subset=['bim_idx'])
+    stg_ppi['bim_idx'] = stg_ppi['bim_idx'].astype(int)
+    stg_ppi = stg_ppi.drop_duplicates(subset=['snp_id'])
+
+    logger.info(f"找到BIM索引的SNP: {len(stg_ppi):,}")
+
+    if len(stg_ppi) == 0:
+        logger.error("无法在BIM文件中找到PPI基因对应的SNP，返回零矩阵")
+        bed = open_bed(str(PLINK_BASE) + '.bed', count_A1=False)
+        n_samples = bed.iid_count
+        return np.zeros((n_samples, n_genes, 5), dtype=np.float32)
+
+    # 按块读取BED文件
+    bed = open_bed(str(PLINK_BASE) + '.bed', count_A1=False)
+    n_samples = bed.iid_count
+    logger.info(f"BED文件: {n_samples} 样本, {bed.sid_count:,} SNPs")
+
+    # 批量读取所有需要的SNP
+    bim_indices = sorted(stg_ppi['bim_idx'].unique())
+    logger.info(f"需要读取 {len(bim_indices)} 个SNP列...")
+
+    # 分批读取避免内存溢出
+    BATCH = 5000
+    snp_data = {}  # bim_idx -> column data (n_samples,)
+    for i in range(0, len(bim_indices), BATCH):
+        batch_idx = bim_indices[i:i+BATCH]
+        chunk = bed.read(np.s_[:, batch_idx], dtype=np.float32)
+        col_mean = np.nanmean(chunk, axis=0)
+        for j, bidx in enumerate(batch_idx):
+            col = chunk[:, j].copy()
+            col[np.isnan(col)] = col_mean[j] if not np.isnan(col_mean[j]) else 0.0
+            snp_data[bidx] = col
+        if (i // BATCH) % 2 == 0:
+            logger.info(f"  读取进度: {min(i+BATCH, len(bim_indices))}/{len(bim_indices)} SNPs")
+
+    # 累积统计量：sum, sum2, max, min, count
+    gene_sum   = np.zeros((n_samples, n_genes), dtype=np.float64)
+    gene_sum2  = np.zeros((n_samples, n_genes), dtype=np.float64)
+    gene_max   = np.full((n_samples, n_genes), -np.inf, dtype=np.float32)
+    gene_min   = np.full((n_samples, n_genes),  np.inf, dtype=np.float32)
+    gene_count = np.zeros(n_genes, dtype=np.int32)
+
+    for _, row in stg_ppi.iterrows():
+        gidx = gene2idx.get(row['gene_id'])
+        if gidx is None:
+            continue
+        bidx = int(row['bim_idx'])
+        if bidx not in snp_data:
+            continue
+        col = snp_data[bidx]          # (n_samples,)
+        gene_sum[:, gidx]  += col
+        gene_sum2[:, gidx] += col * col
+        np.maximum(gene_max[:, gidx], col, out=gene_max[:, gidx])
+        np.minimum(gene_min[:, gidx], col, out=gene_min[:, gidx])
+        gene_count[gidx] += 1
+
+    # 计算5个特征
+    nz = gene_count > 0                   # (n_genes,) 有SNP覆盖的基因
+
+    # F0: mean
+    feat_mean = np.zeros((n_samples, n_genes), dtype=np.float32)
+    feat_mean[:, nz] = (gene_sum[:, nz] / gene_count[nz]).astype(np.float32)
+
+    # F1: std  =  sqrt(E[x^2] - E[x]^2)，数值稳定加clip
+    feat_std = np.zeros((n_samples, n_genes), dtype=np.float32)
+    if nz.any():
+        var = gene_sum2[:, nz] / gene_count[nz] - (gene_sum[:, nz] / gene_count[nz]) ** 2
+        feat_std[:, nz] = np.sqrt(np.clip(var, 0, None)).astype(np.float32)
+
+    # F2: max（无SNP的基因设为0）
+    feat_max = np.where(nz[None, :], gene_max, 0.0).astype(np.float32)
+
+    # F3: min（无SNP的基因设为0）
+    feat_min = np.where(nz[None, :], gene_min, 0.0).astype(np.float32)
+
+    # F4: log-normalized count（结构特征，所有样本相同）
+    max_count = max(int(gene_count.max()), 1)
+    feat_logcnt = (np.log1p(gene_count) / np.log1p(max_count)).astype(np.float32)
+    feat_logcnt = np.broadcast_to(feat_logcnt[None, :], (n_samples, n_genes)).copy()
+
+    # 拼接 → (n_samples, n_genes, 5)
+    global_feat = np.stack(
+        [feat_mean, feat_std, feat_max, feat_min, feat_logcnt], axis=-1
+    )  # (n_samples, n_genes, 5)
+
+    covered = nz.sum()
+    logger.info(f"多维基因特征: {covered}/{n_genes} 基因有SNP覆盖 "
+                f"({covered/n_genes*100:.1f}%), shape={global_feat.shape}")
+    np.save(cache_path, global_feat)
+    return global_feat
+
+
+def build_gene_features(trait: str, snp_to_gene: pd.DataFrame,
+                         gene_list: list,
+                         global_gene_feat: np.ndarray = None,
+                         bim_df: pd.DataFrame = None) -> bool:
+    """
+    为指定性状计算各split的多维基因特征矩阵。
+    使用全部30K SNP（而非仅PCS选中的5000个），大幅提高PPI基因覆盖率。
+    gene_feat[sample, gene, :] = [mean, std, max, min, log_count]
     """
     trait_graph_dir = GRAPH_DIR / trait
     trait_graph_dir.mkdir(exist_ok=True)
 
-    # 检查缓存
-    if (trait_graph_dir / 'gene_feat_train.npy').exists():
-        logger.info(f"  {trait}: 基因特征已存在，跳过")
+    # 检查v2缓存（优先）
+    if (trait_graph_dir / 'gene_feat_v2_train.npy').exists():
+        logger.info(f"  {trait}: 多维基因特征(v2)已存在，跳过")
         return True
 
     trait_dir = PROC_DIR / trait
-    meta_path = trait_dir / 'selected_snp_meta.csv'
-    if not meta_path.exists():
-        return False
 
-    snp_meta = pd.read_csv(meta_path)
-    gene2idx = {g: i for i, g in enumerate(gene_list)}
-    n_genes  = len(gene_list)
+    # 使用全局多维基因特征矩阵（基于BED文件全部30K SNP）
+    if global_gene_feat is not None:
+        # 按split加载样本索引，从全局特征矩阵提取子集
+        for split in ['train', 'val', 'test']:
+            idx_file = trait_dir / f'{split}_idx.csv'
+            if not idx_file.exists():
+                logger.warning(f"  {trait}: 找不到 {split}_idx.csv")
+                continue
+            sample_idx = pd.read_csv(idx_file)['idx'].values  # BED文件中的行号
+            gene_feat = global_gene_feat[sample_idx]  # (n_split, n_genes, 5)
+            np.save(trait_graph_dir / f'gene_feat_v2_{split}.npy', gene_feat)
 
-    # 找出该性状选中的SNP中有基因映射的
-    snp_meta_with_gene = snp_meta.merge(
-        snp_to_gene[['snp_id', 'gene_id']], on='snp_id', how='left'
-    )
-    snp_meta_with_gene = snp_meta_with_gene.dropna(subset=['gene_id'])
-    snp_meta_with_gene = snp_meta_with_gene[
-        snp_meta_with_gene['gene_id'].isin(gene2idx)
-    ]
+        n_genes = global_gene_feat.shape[1]
+        # 覆盖率用mean通道判断（F0）
+        covered = (global_gene_feat[..., 0].any(axis=0)).sum()
+        logger.info(f"  {trait}: v2基因特征saved {global_gene_feat.shape[-1]}维, "
+                    f"覆盖基因={covered}/{n_genes}")
+        return True
 
-    logger.info(f"  {trait}: {len(snp_meta_with_gene)} SNPs有基因映射 "
-                f"(覆盖 {snp_meta_with_gene['gene_id'].nunique()} 基因)")
-
-    for split in ['train', 'val', 'test']:
-        X = np.load(trait_dir / f'X_{split}.npy')  # (n_samples, n_snps_pcs)
-        n_samples = X.shape[0]
-
-        gene_feat = np.zeros((n_samples, n_genes), dtype=np.float32)
-        gene_count = np.zeros(n_genes, dtype=np.int32)
-
-        for _, row in snp_meta_with_gene.iterrows():
-            pcs_rank = int(row['pcs_rank'])
-            gidx = gene2idx[row['gene_id']]
-            if pcs_rank < X.shape[1]:
-                gene_feat[:, gidx] += X[:, pcs_rank]
-                gene_count[gidx] += 1
-
-        nz = gene_count > 0
-        gene_feat[:, nz] /= gene_count[nz]
-        np.save(trait_graph_dir / f'gene_feat_{split}.npy', gene_feat)
-
-    logger.info(f"  {trait}: 基因特征saved ({n_samples}, {n_genes})")
-    return True
+    logger.warning(f"  {trait}: 未提供global_gene_feat，跳过")
+    return False
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -308,7 +432,6 @@ def main():
 
     if snp_to_gene.empty:
         logger.error("SNP→Gene映射为空！检查染色体格式是否一致。")
-        # Debug: 检查染色体格式
         logger.info(f"SNP meta chr: {sorted(snp_meta_all['chr'].unique()[:5])}")
         logger.info(f"Gene ann chr: {sorted(gene_ann['chr'].unique()[:5])}")
         return
@@ -318,22 +441,32 @@ def main():
     print(f"\n基因节点数: {len(gene_list):,}")
     print(f"PPI边数: {adj.nnz:,}, 稀疏度: {adj.nnz/(len(gene_list)**2)*100:.2f}%")
 
-    # Step 4: 各性状的基因特征
-    print("\n计算各性状基因特征...")
+    # Step 4: 加载BIM文件，构建全局基因特征矩阵（使用全部30K SNP）
+    logger.info("加载BIM文件...")
+    bim_df = pd.read_csv(str(PLINK_BASE) + '.bim', sep='\t',
+                         names=['chr', 'snp_id_raw', 'cm', 'pos', 'a1', 'a2'])
+    logger.info(f"BIM: {len(bim_df):,} SNPs")
+
+    print("\n构建全局基因特征矩阵（全部30K SNP → PPI基因）...")
+    global_gene_feat = load_global_gene_features(snp_to_gene, gene_list, bim_df)
+
+    # Step 5: 各性状的基因特征（直接从全局矩阵按split索引提取）
+    print("\n按性状split提取基因特征...")
     for trait in TRAITS:
-        build_gene_features(trait, snp_to_gene, gene_list)
+        build_gene_features(trait, snp_to_gene, gene_list,
+                            global_gene_feat=global_gene_feat, bim_df=bim_df)
 
     print("\n完成！图数据保存至:", GRAPH_DIR)
     print(f"基因节点: {len(gene_list):,}")
 
     # 验证
-    for trait in TRAITS[:2]:
-        feat_path = GRAPH_DIR / trait / 'gene_feat_train.npy'
+    for trait in TRAITS:
+        feat_path = GRAPH_DIR / trait / 'gene_feat_v2_train.npy'
         if feat_path.exists():
             feat = np.load(feat_path)
-            covered = (feat.any(axis=0)).sum()
-            print(f"  {trait}: gene_feat_train={feat.shape}, "
-                  f"覆盖基因={covered}/{len(gene_list)}")
+            covered = (feat[..., 0].any(axis=0)).sum()
+            print(f"  {trait}: gene_feat_v2_train={feat.shape}, "
+                  f"覆盖基因={covered}/{len(gene_list)} ({covered/len(gene_list)*100:.1f}%)")
 
 
 if __name__ == '__main__':

@@ -44,13 +44,17 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # ── Setup logging ──────────────────────────────────────────────────────────────
+CHECKPOINT_PATH = Path('E:/GWAS/results/gstp007/benchmark_checkpoint.json')
+
+# 启动时判断是否续跑
+_resume_mode = CHECKPOINT_PATH.exists()
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(levelname)s %(message)s',
     handlers=[
         logging.StreamHandler(),
         logging.FileHandler('E:/GWAS/results/gstp007/benchmark_5fold_cv.log',
-                            mode='w', encoding='utf-8'),
+                            mode='a' if _resume_mode else 'w', encoding='utf-8'),
     ]
 )
 logger = logging.getLogger(__name__)
@@ -390,82 +394,91 @@ def run_fold(
         })
         return pcc
 
+    def skip(model_name):
+        return _model_done(results, trait, model_name, fold, seed)
+
     # ── 1. GBLUP ─────────────────────────────────────────────────────────────
-    try:
-        gblup = GBLUP()
-        gblup.fit(X_tr, y_tr_s)
-        pred = gblup.predict(X_te) * y_std + y_mean
-        pcc = record('GBLUP', pred)
-        logger.info(f"    GBLUP      PCC={pcc:.4f}")
-    except Exception as e:
-        logger.warning(f"    GBLUP failed: {e}")
+    if not skip('GBLUP'):
+        try:
+            gblup = GBLUP()
+            gblup.fit(X_tr, y_tr_s)
+            pred = gblup.predict(X_te) * y_std + y_mean
+            pcc = record('GBLUP', pred)
+            logger.info(f"    GBLUP      PCC={pcc:.4f}")
+        except Exception as e:
+            logger.warning(f"    GBLUP failed: {e}")
 
     # ── 2. Ridge ──────────────────────────────────────────────────────────────
-    try:
-        ridge = RidgeCV(alphas=[0.1, 1.0, 10.0, 100.0])
-        ridge.fit(X_tr, y_tr_s)
-        pred = ridge.predict(X_te) * y_std + y_mean
-        pcc = record('Ridge', pred)
-        logger.info(f"    Ridge      PCC={pcc:.4f}")
-    except Exception as e:
-        logger.warning(f"    Ridge failed: {e}")
+    if not skip('Ridge'):
+        try:
+            ridge = RidgeCV(alphas=[0.1, 1.0, 10.0, 100.0])
+            ridge.fit(X_tr, y_tr_s)
+            pred = ridge.predict(X_te) * y_std + y_mean
+            pcc = record('Ridge', pred)
+            logger.info(f"    Ridge      PCC={pcc:.4f}")
+        except Exception as e:
+            logger.warning(f"    Ridge failed: {e}")
 
     # ── 3. DNNGP ──────────────────────────────────────────────────────────────
-    try:
-        dnngp = DNNGP(
-            hidden_dims=(512, 256, 128, 64),
-            dropout=0.3, lr=1e-3,
-            max_epochs=CFG['max_epochs'], patience=CFG['patience'],
-        )
-        dnngp.fit(X_tr, y_tr_s, X_val=X_va, y_val=y_va_s)
-        pred = dnngp.predict(X_te) * y_std + y_mean
-        pcc = record('DNNGP', pred)
-        logger.info(f"    DNNGP      PCC={pcc:.4f}")
-    except Exception as e:
-        logger.warning(f"    DNNGP failed: {e}")
+    if not skip('DNNGP'):
+        try:
+            dnngp = DNNGP(
+                hidden_dims=(512, 256, 128, 64),
+                dropout=0.3, lr=1e-3,
+                max_epochs=CFG['max_epochs'], patience=CFG['patience'],
+            )
+            dnngp.fit(X_tr, y_tr_s, X_val=X_va, y_val=y_va_s)
+            pred = dnngp.predict(X_te) * y_std + y_mean
+            pcc = record('DNNGP', pred)
+            logger.info(f"    DNNGP      PCC={pcc:.4f}")
+        except Exception as e:
+            logger.warning(f"    DNNGP failed: {e}")
 
     # ── 4. NetGP ──────────────────────────────────────────────────────────────
-    try:
-        netgp = NetGP(
-            d_hidden=128, dropout=0.2, lr=5e-4,
-            max_epochs=CFG['max_epochs'], patience=CFG['patience'],
-        )
-        netgp.fit(X_tr, y_tr_s, X_val=X_va, y_val=y_va_s,
-                  gene_train=g_tr, gene_val=g_va, adj=adj)
-        pred = netgp.predict(X_te, gene_test=g_te) * y_std + y_mean
-        pcc = record('NetGP', pred)
-        logger.info(f"    NetGP      PCC={pcc:.4f}")
-    except Exception as e:
-        logger.warning(f"    NetGP failed: {e}")
+    if not skip('NetGP'):
+        try:
+            netgp = NetGP(
+                d_hidden=128, dropout=0.2, lr=5e-4,
+                max_epochs=CFG['max_epochs'], patience=CFG['patience'],
+            )
+            netgp.fit(X_tr, y_tr_s, X_val=X_va, y_val=y_va_s,
+                      gene_train=g_tr, gene_val=g_va, adj=adj)
+            pred = netgp.predict(X_te, gene_test=g_te) * y_std + y_mean
+            pcc = record('NetGP', pred)
+            logger.info(f"    NetGP      PCC={pcc:.4f}")
+        except Exception as e:
+            logger.warning(f"    NetGP failed: {e}")
 
     # ── 5. Transformer Only ───────────────────────────────────────────────────
-    try:
-        _, m = train_planthgnn(
-            X_tr, y_tr_s, X_va, y_va_s, n_snps,
-            use_gcn=False, use_attnres=False, cfg=CFG,
-        )
-        pred = predict_planthgnn(m, X_te) * y_std + y_mean
-        pcc = record('Transformer', pred)
-        logger.info(f"    Transformer PCC={pcc:.4f}")
-        del m; torch.cuda.empty_cache()
-    except Exception as e:
-        logger.warning(f"    Transformer failed: {e}")
+    if not skip('Transformer'):
+        try:
+            _, m = train_planthgnn(
+                X_tr, y_tr_s, X_va, y_va_s, n_snps,
+                use_gcn=False, use_attnres=False, cfg=CFG,
+            )
+            pred = predict_planthgnn(m, X_te) * y_std + y_mean
+            pcc = record('Transformer', pred)
+            logger.info(f"    Transformer PCC={pcc:.4f}")
+            del m; torch.cuda.empty_cache()
+        except Exception as e:
+            logger.warning(f"    Transformer failed: {e}")
 
     # ── 6. Transformer + AttnRes ──────────────────────────────────────────────
-    try:
-        _, m = train_planthgnn(
-            X_tr, y_tr_s, X_va, y_va_s, n_snps,
-            use_gcn=False, use_attnres=True, cfg=CFG,
-        )
-        pred = predict_planthgnn(m, X_te) * y_std + y_mean
-        pcc = record('Transformer+AttnRes', pred)
-        logger.info(f"    Tr+AttnRes  PCC={pcc:.4f}")
-        del m; torch.cuda.empty_cache()
-    except Exception as e:
-        logger.warning(f"    Tr+AttnRes failed: {e}")
+    if not skip('Transformer+AttnRes'):
+        try:
+            _, m = train_planthgnn(
+                X_tr, y_tr_s, X_va, y_va_s, n_snps,
+                use_gcn=False, use_attnres=True, cfg=CFG,
+            )
+            pred = predict_planthgnn(m, X_te) * y_std + y_mean
+            pcc = record('Transformer+AttnRes', pred)
+            logger.info(f"    Tr+AttnRes  PCC={pcc:.4f}")
+            del m; torch.cuda.empty_cache()
+        except Exception as e:
+            logger.warning(f"    Tr+AttnRes failed: {e}")
 
     # ── 7. Transformer + GCN (no AttnRes) ────────────────────────────────────
-    if g_tr is not None and adj is not None:
+    if g_tr is not None and adj is not None and not skip('Transformer+GCN'):
         try:
             _, m = train_planthgnn(
                 X_tr, y_tr_s, X_va, y_va_s, n_snps,
@@ -481,7 +494,7 @@ def run_fold(
             logger.warning(f"    Tr+GCN failed: {e}")
 
     # ── 8. PlantHGNN Full ─────────────────────────────────────────────────────
-    if g_tr is not None and adj is not None:
+    if g_tr is not None and adj is not None and not skip('PlantHGNN_Full'):
         try:
             _, m = train_planthgnn(
                 X_tr, y_tr_s, X_va, y_va_s, n_snps,
@@ -584,12 +597,40 @@ def build_paper_table(summary: dict, sig: dict, baseline: str = 'NetGP') -> pd.D
 # 主程序
 # ══════════════════════════════════════════════════════════════════════════════
 
+def _is_fold_done(all_results: dict, trait: str, fold: int, seed: int) -> bool:
+    """检查某个fold是否已完成（PlantHGNN_Full有结果才算完成）。"""
+    if trait not in all_results:
+        return False
+    full_runs = all_results[trait].get('PlantHGNN_Full', [])
+    return any(r['fold'] == fold and r['seed'] == seed for r in full_runs)
+
+
+def _model_done(all_results: dict, trait: str, model_name: str,
+                fold: int, seed: int) -> bool:
+    """检查单个模型在某fold上是否已有记录。"""
+    if trait not in all_results:
+        return False
+    return any(r['fold'] == fold and r['seed'] == seed
+               for r in all_results[trait].get(model_name, []))
+
+
 def main():
     logger.info("=" * 70)
     logger.info("PlantHGNN 5-Fold CV Benchmark")
     logger.info("=" * 70)
 
-    all_results = {}
+    # ── 断点续跑：加载已有checkpoint ──────────────────────────────────────────
+    if CHECKPOINT_PATH.exists():
+        with open(CHECKPOINT_PATH) as f:
+            all_results = json.load(f)
+        completed = sum(
+            len(v.get('GBLUP', []))
+            for v in all_results.values()
+        )
+        logger.info(f"  [RESUME] 从checkpoint恢复，已完成 {completed} 个fold-seed组合")
+    else:
+        all_results = {}
+
     start_total = time.time()
 
     for trait in TRAITS:
@@ -610,9 +651,16 @@ def main():
         for seed in SEEDS:
             kf = KFold(n_splits=N_FOLDS, shuffle=True, random_state=seed)
             for fold, (tr_idx, te_idx) in enumerate(kf.split(X_all)):
+                # ── 跳过已完成的折 ──────────────────────────────────────────
+                if _is_fold_done(all_results, trait, fold, seed):
+                    logger.info(f"  [{trait}] fold{fold}_seed{seed}: 已完成，跳过")
+                    continue
                 try:
                     run_fold(trait, X_all, y_all, gene_all, adj,
                              tr_idx, te_idx, fold, seed, all_results)
+                    # ── 每折完成后保存checkpoint ────────────────────────────
+                    with open(CHECKPOINT_PATH, 'w') as f:
+                        json.dump(all_results, f)
                 except Exception as e:
                     logger.error(f"  Fold {fold} seed {seed} failed: {e}")
 

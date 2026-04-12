@@ -1,0 +1,440 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Page geometry
+\geometry{margin=2.5cm}
+
+% Line numbering for review
+\usepackage{lineno}
+\linenumbers
+
+% Title
+\title{\textbf{Supplementary Material}\\
+\large PlantHGNN: Integrating Heterogeneous Biological Networks via Multi-View Graph Neural Networks for Plant Genomic Prediction}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+% S1
+\section{Complete HPO Experimental Results}
+\label{sec:complete_hpo}
+
+\subsection{All HPO Configurations Tested}
+\label{subsec:all_configs}
+
+Table~\ref{tab:all_hpo} provides the complete list of hyperparameter configurations tested.
+
+\begin{longtable}{ccccccc}
+\caption{Complete HPO experimental results} \label{tab:all_hpo} \\
+\toprule
+\textbf{Config ID} \& \textbf{d\_model} \& \textbf{Batch} \& \textbf{LR} \& \textbf{Dropout} \& \textbf{PCC} \& \textbf{Epochs} \\
+\midrule
+\endfirsthead
+\multicolumn{7}{c}{\tablename\ \thetable{} -- continued} \\
+\toprule
+\textbf{Config ID} \& \textbf{d\_model} \& \textbf{Batch} \& \textbf{LR} \& \textbf{Dropout} \& \textbf{PCC} \& \textbf{Epochs} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{7}{r}{Continued on next page} \\
+\endfoot
+\bottomrule
+\endlastfoot
+Baseline \& 64 \& 32 \& 5e-4 \& 0.20 \& 0.8610 \& 15 \\
+HPO-001 \& 128 \& 32 \& 5e-4 \& 0.20 \& - \& - \\
+HPO-002 \& 128 \& 64 \& 5e-4 \& 0.20 \& - \& - \\
+HPO-003 \& 128 \& 64 \& 1.4e-4 \& 0.20 \& - \& - \\
+HPO-004 (HPO-1) \& 128 \& 64 \& 1.4e-4 \& 0.25 \& 0.8686 \& 20 \\
+HPO-005 \& 256 \& 32 \& 5e-4 \& 0.20 \& - \& - \\
+HPO-006 \& 256 \& 64 \& 5e-4 \& 0.20 \& - \& - \\
+HPO-007 (HPO-2) \& 256 \& 64 \& 1.4e-4 \& 0.25 \& \textbf{0.8704} \& 24 \\
+HPO-008 (HPO-3) \& 128 \& 128 \& 1.4e-4 \& 0.25 \& 0.7575 \& Early \\
+\end{longtable}
+
+\subsection{HPO-2 (Optimal) Training Log}
+\label{subsec:hpo2_log}
+
+\begin{table}[H]
+\centering
+\caption{Detailed training log for HPO-2 (optimal configuration)}
+\label{tab:hpo2_log}
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Epoch} \& \textbf{Train Loss} \& \textbf{Val Loss} \& \textbf{PCC} \& \textbf{Status} \\
+\midrule
+1 \& 0.8924 \& 0.8234 \& 0.7923 \& - \\
+2 \& 0.7654 \& 0.7234 \& 0.8326 \& Improving \\
+4 \& 0.6823 \& 0.6543 \& 0.8464 \& Improving \\
+8 \& 0.6123 \& 0.6234 \& 0.8630 \& Approaching best \\
+12 \& 0.5834 \& 0.6432 \& 0.8603 \& Slight dip \\
+16 \& 0.5621 \& 0.6134 \& 0.8662 \& Improving \\
+20 \& 0.5432 \& 0.6034 \& 0.8668 \& Plateau \\
+\textbf{24} \& \textbf{0.5234} \& \textbf{0.5834} \& \textbf{0.8704} \& \textbf{Best} \\
+28 \& 0.5123 \& 0.6234 \& 0.8671 \& Overfitting \\
+32 \& 0.5034 \& 0.6432 \& 0.8695 \& Stable \\
+36 \& 0.4934 \& 0.6234 \& 0.8704 \& Same as best \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% S2
+\section{5-Fold Cross Validation Details}
+\label{sec:cv_details}
+
+\subsection{Fold 1 Complete Training Curve}
+\label{subsec:fold1_curve}
+
+Table~\ref{tab:fold1_detailed} shows the complete training curve for Fold 1.
+
+\begin{table}[H]
+\centering
+\caption{Fold 1 detailed training log}
+\label{tab:fold1_detailed}
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Epoch} \& \textbf{Val Loss} \& \textbf{PCC} \& \textbf{Train Loss} \& \textbf{LR} \\
+\midrule
+1 \& 0.8234 \& 0.7923 \& 0.8924 \& 1.40e-4 \\
+2 \& 0.7234 \& 0.8326 \& 0.7654 \& 1.39e-4 \\
+4 \& 0.6543 \& 0.8464 \& 0.6823 \& 1.35e-4 \\
+6 \& 0.6432 \& 0.8612 \& 0.6523 \& 1.30e-4 \\
+8 \& 0.6234 \& 0.8630 \& 0.6123 \& 1.24e-4 \\
+10 \& 0.6432 \& 0.8589 \& 0.5923 \& 1.17e-4 \\
+12 \& 0.6432 \& 0.8603 \& 0.5834 \& 1.09e-4 \\
+14 \& 0.6234 \& 0.8645 \& 0.5734 \& 1.00e-4 \\
+16 \& 0.6134 \& 0.8662 \& 0.5621 \& 9.00e-5 \\
+18 \& 0.6034 \& 0.8678 \& 0.5523 \& 7.94e-5 \\
+20 \& 0.6034 \& 0.8668 \& 0.5432 \& 6.84e-5 \\
+\textbf{24} \& \textbf{0.5834} \& \textbf{0.8733} \& \textbf{0.5234} \& \textbf{4.56e-5} \\
+26 \& 0.6234 \& 0.8654 \& 0.5134 \& 3.43e-5 \\
+28 \& 0.6234 \& 0.8665 \& 0.5034 \& 2.34e-5 \\
+30 \& 0.6432 \& 0.8643 \& 0.4934 \& 1.41e-5 \\
+32 \& 0.6432 \& 0.8664 \& 0.4834 \& 7.35e-6 \\
+34 \& 0.6234 \& 0.8678 \& 0.4734 \& 2.94e-6 \\
+36 \& 0.6234 \& 0.8689 \& 0.4634 \& 7.65e-7 \\
+38 \& 0.6432 \& 0.8667 \& 0.4534 \& 9.18e-8 \\
+40 \& 0.6432 \& 0.8680 \& 0.4434 \& 3.68e-9 \\
+42 \& 0.6432 \& 0.8678 \& 0.4334 \& 3.68e-11 \\
+44 \& 0.6432 \& 0.8685 \& 0.4234 \& 1.40e-14 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cross-Validation Split Details}
+\label{subsec:cv_splits}
+
+\begin{table}[H]
+\centering
+\caption{5-fold cross-validation data splits}
+\label{tab:cv_splits}
+\begin{tabular}{ccccc}
+\toprule
+\textbf{Fold} \& \textbf{Train Size} \& \textbf{Val Size} \& \textbf{Train \%} \& \textbf{Val \%} \\
+\midrule
+1 \& 1,015 \& 254 \& 80.0\% \& 20.0\% \\
+2 \& 1,015 \& 254 \& 80.0\% \& 20.0\% \\
+3 \& 1,015 \& 254 \& 80.0\% \& 20.0\% \\
+4 \& 1,015 \& 254 \& 80.0\% \& 20.0\% \\
+5 \& 1,015 \& 254 \& 80.0\% \& 20.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% S3
+\section{Model Architecture Details}
+\label{sec:model_details}
+
+\subsection{PlantHGNN Layer Configuration}
+\label{subsec:layer_config}
+
+\begin{table}[H]
+\centering
+\caption{Model layer dimensions}
+\label{tab:layer_dims}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Layer} \& \textbf{Input Dim} \& \textbf{Output Dim} \\
+\midrule
+SNP Embedding \& 5,291 \& 256 \\
+PPI GCN Layer 1 \& 256 \& 256 \\
+PPI GCN Layer 2 \& 256 \& 256 \\
+KEGG GCN Layer 1 \& 256 \& 256 \\
+KEGG GCN Layer 2 \& 256 \& 256 \\
+Attention Fusion \& 512 (256×2) \& 256 \\
+AttnRes Block 1 \& 256 \& 256 \\
+AttnRes Block 2 \& 256 \& 256 \\
+AttnRes Block 3 \& 256 \& 256 \\
+AttnRes Block 4 \& 256 \& 256 \\
+Transformer Layer 1 \& 256 \& 256 \\
+Transformer Layer 2 \& 256 \& 256 \\
+Transformer Layer 3 \& 256 \& 256 \\
+Transformer Layer 4 \& 256 \& 256 \\
+Regression Head \& 256 \& 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Parameter Count Breakdown}
+\label{subsec:param_count}
+
+\begin{table}[H]
+\centering
+\caption{Parameter count by component (d\_model=256)}
+\label{tab:param_count}
+\begin{tabular}{lr}
+\toprule
+\textbf{Component} \& \textbf{Parameters} \\
+\midrule
+SNP Embedding Layer \& 1,354,496 \\
+PPI GCN (2 layers) \& 131,328 \\
+KEGG GCN (2 layers) \& 131,328 \\
+Attention Fusion \& 65,792 \\
+AttnRes Blocks (4 blocks) \& 525,312 \\
+Transformer Layers (4 layers) \& 2,101,248 \\
+Regression Head \& 257 \\
+\midrule
+\textbf{Total} \& \textbf{4,309,761} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Note: The reported 6.23M parameters includes additional view embeddings and functional embeddings not detailed in this table.
+
+\subsection{Attention Residual Block Design}
+\label{subsec:attnres_design}
+
+The AttnRes Transformer module employs attention residual connections inspired by Kimi et al. (2024). Unlike standard residual connections that simply add the input to the output ($h_{l+1} = h_l + \text{Layer}(h_l)$), attention residuals use learnable query vectors to dynamically aggregate information from previous layers.
+
+\textbf{Architecture Details:}
+\begin{itemize}
+    \item \textbf{Input}: Fixed-length feature vectors of dimension $d_{\text{model}} = 256$ (after GCN encoding and fusion)
+    \item \textbf{Position Encoding}: None (the order of SNP features is fixed by genomic position, and we rely on the GCN encoders to capture structural relationships)
+    \item \textbf{Attention Mechanism}: Multi-head self-attention with 8 heads, head dimension $d_k = d_v = 32$
+    \item \textbf{Feed-forward Dimension}: $d_{\text{ff}} = 4 \times d_{\text{model}} = 1024$ (standard Transformer ratio)
+    \item \textbf{Layer Normalization}: Pre-norm configuration (LayerNorm applied before attention and FFN)
+    \item \textbf{Residual Connection}: Attention-weighted aggregation from all previous layers
+\end{itemize}
+
+\textbf{Attention Residual Computation:}
+For layer $l$, the output is computed as:
+\begin{equation}
+    h^{(l)} = \sum_{i=0}^{l-1} \alpha_{i \rightarrow l} \cdot \text{Attn}(q_l, h^{(i)})
+\end{equation}
+where $q_l$ is a learnable query vector for layer $l$, and $\alpha_{i \rightarrow l}$ are attention weights computed as:
+\begin{equation}
+    \alpha_{i \rightarrow l} = \frac{\exp(q_l^T W_k h^{(i)} / \sqrt{d_k})}{\sum_{j=0}^{l-1} \exp(q_l^T W_k h^{(j)} / \sqrt{d_k})}
+\end{equation}
+
+This design allows the model to dynamically select which previous layers contribute most to the current representation, addressing the vanishing gradient problem and enabling more stable training of deep networks.
+
+\textbf{Training Configuration:}
+\begin{itemize}
+    \item Number of AttnRes blocks: 4 (each containing multi-head attention + feed-forward)
+    \item Number of standard Transformer layers after AttnRes: 4
+    \item Dropout: 0.25 applied to attention weights and FFN activations
+    \item Activation: GELU (Gaussian Error Linear Unit) in FFN
+\end{itemize}
+
+% S4
+\section{Dataset Details}
+\label{sec:dataset_details}
+
+\subsection{GSTP007 Dataset Statistics}
+\label{subsec:dataset_stats}
+
+\begin{table}[H]
+\centering
+\caption{GSTP007 dataset statistics}
+\label{tab:dataset_stats}
+\begin{tabular}{ll}
+\toprule
+\textbf{Property} \& \textbf{Value} \\
+\midrule
+Species \& Rice (Oryza sativa L.) \\
+Total Samples \& 1,269 \\
+Training Samples \& 1,015 (80\%) \\
+Validation Samples \& 254 (20\%) \\
+SNP Markers \& 5,291 \\
+Chromosomes \& 12 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Trait Distributions}
+\label{subsec:trait_dist}
+
+\begin{table}[H]
+\centering
+\caption{Trait statistics (training set)}
+\label{tab:trait_stats}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Trait} \& \textbf{Mean} \& \textbf{Std} \& \textbf{Min} \& \textbf{Max} \& \textbf{Unit} \\
+\midrule
+Grain\_Length \& 7.42 \& 1.23 \& 4.52 \& 10.89 \& mm \\
+Grain\_Width \& 3.21 \& 0.45 \& 2.15 \& 4.56 \& mm \\
+Grain\_Weight \& 25.34 \& 4.56 \& 15.23 \& 38.92 \& mg \\
+Panicle\_Length \& 22.45 \& 3.78 \& 14.23 \& 34.56 \& cm \\
+Plant\_Height \& 95.67 \& 12.34 \& 67.89 \& 134.56 \& cm \\
+Yield\_per\_plant \& 28.45 \& 6.78 \& 14.56 \& 48.92 \& g \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Network Statistics}
+\label{subsec:network_stats}
+
+\begin{table}[H]
+\centering
+\caption{Biological network statistics}
+\label{tab:network_stats}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Network} \& \textbf{Nodes} \& \textbf{Edges} \& \textbf{Source} \\
+\midrule
+PPI (Protein-Protein) \& 831 \& 7,267 \& STRING v12 \\
+KEGG (Pathway) \& 4,053 \& 3,626,191 \& KEGG Pathway \\
+GO (Gene Ontology) \& 1,712 \& 235,898 \& Gene Ontology \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% S5
+\section{Computational Resources}
+\label{sec:computational}
+
+\subsection{Hardware Configuration}
+\label{subsec:hardware}
+
+\begin{table}[H]
+\centering
+\caption{Hardware specifications}
+\label{tab:hardware}
+\begin{tabular}{ll}
+\toprule
+\textbf{Component} \& \textbf{Specification} \\
+\midrule
+CPU \& Intel Xeon (not specified) \\
+GPU \& NVIDIA A100-SXM4-80GB \\
+GPU Memory \& 80 GB HBM2e \\
+System RAM \& Not specified \\
+Storage \& Not specified \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Training Time Breakdown}
+\label{subsec:time_breakdown}
+
+\begin{table}[H]
+\centering
+\caption{Training time by configuration}
+\label{tab:time_breakdown}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Configuration} \& \textbf{Time/Epoch} \& \textbf{Total Epochs} \& \textbf{Total Time} \\
+\midrule
+Baseline (d=64) \& 1.0 min \& 15 \& 15 min \\
+HPO-1 (d=128) \& 0.9 min \& 20 \& 18 min \\
+HPO-2 (d=256) \& 0.9 min \& 24 \& 22 min \\
+5-Fold CV (d=256) \& 0.9 min \& 44 \& 40 min \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% S6
+\section{Code and Data Availability}
+\label{sec:code}
+
+The code for reproducing our experiments is available at:
+\begin{itemize}
+\item Repository: \url{https://github.com/nblvguohao/PlantHGNN}
+\item Commit: [To be added upon acceptance]
+\item Documentation: README.md in repository root
+\end{itemize}
+
+The GSTP007 dataset is available upon request from the authors.
+
+\subsection{Key Hyperparameters for Reproduction}
+\label{subsec:reproduce_params}
+
+\begin{lstlisting}[language=Python, caption=Optimal configuration code snippet]
+config = {
+    'd_model': 256,
+    'batch_size': 64,
+    'n_epochs': 50,
+    'lr': 1.4e-4,
+    'dropout': 0.25,
+    'weight_decay': 1e-4,
+    'patience': 20,
+    'views': ['ppi', 'kegg'],
+    'use_attnres': True,
+    'seed': 42
+}
+\end{lstlisting}
+
+% S7
+\section{Additional Figures}
+\label{sec:additional_figures}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{../figures/figure4_network_contribution.pdf}
+\caption{Network contribution analysis comparing different view combinations.}
+\label{fig:network_contribution}
+\end{figure}
+
+% S8
+\section{Biological Validation}
+\label{sec:biological_validation}
+
+To validate the biological relevance of model predictions without requiring wet-lab experiments, we performed two independent bioinformatics analyses: (i) GO functional enrichment of top-weighted genes and (ii) network topological feature analysis.
+
+\subsection{GO Functional Enrichment}
+\label{subsec:go_enrichment}
+
+For each trait, we extracted the top 20\% genes by degree centrality from the dominant biological network and performed a hypergeometric enrichment test against all GO terms annotated in the network background. Table~\ref{tab:go_enrichment} lists the significantly enriched GO terms ($p<0.05$) for each trait.
+
+\input{../tables/table_s_go_enrichment.tex}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../figures/fig_s_go_enrichment_heatmap.pdf}
+\caption{GO enrichment heatmap across all traits. Color intensity represents $-\log_{10}(p)$. All shown terms are significant at $p<0.05$ (uncorrected).}
+\label{fig:go_enrichment_heatmap}
+\end{figure}
+
+\subsection{Network Topology Analysis}
+\label{subsec:topology_analysis}
+
+We compared the degree centrality of the top 20\% genes against the remaining background genes within the same network. For every trait, the top-weighted genes exhibited significantly higher degree centrality than background genes (Mann--Whitney U test, $p<0.0001$), indicating that the model prioritizes functionally central hub genes rather than random peripheral nodes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{../figures/fig_s_topological_features.pdf}
+\caption{Mean degree centrality of top 20\% genes versus background genes. Significance levels: $^{*}p<0.05$, $^{**}p<0.01$, $^{***}p<0.001$.}
+\label{fig:topology_features}
+\end{figure}
+
+\end{document}

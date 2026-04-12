@@ -1,3 +1,41 @@
+# 忽略原始和大体积数据
+data/raw/
+data/synthetic/
+data/processed/*
+!data/processed/rice469*/
+!data/processed/soybean999*/
+!data/processed/maize282*/
+!data/processed/wheat599*/
+!data/processed/graphs/
+!data/processed/splits/
+
+# 只保留部分小型结果
+results/*
+!results/rice469/
+!results/soybean999/
+!results/maize282/
+!results/wheat599/
+!results/comparison_plots/
+
+# 忽略临时和日志文件
+*.log
+*.tmp
+*.bak
+data/training_log.txt
+
+# Python缓存
+__pycache__/
+*.pyc
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# VSCode设置
+.vscode/
+
+# 其他
+*.swp
+*.DS_Store
 # 数据文件（不入库，太大）
 data/raw/
 data/processed/

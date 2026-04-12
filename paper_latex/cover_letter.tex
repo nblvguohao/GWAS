@@ -1,0 +1,61 @@
+\documentclass[11pt,a4paper]{letter}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+
+\signature{Guohao Lyu\\
+School of Artificial Intelligence\\
+Anhui Agricultural University\\
+Email: lvguohao@ahau.edu.cn}
+
+\address{School of Artificial Intelligence\\
+Anhui Agricultural University\\
+Hefei, Anhui 230036\\
+China}
+
+\begin{document}
+
+\begin{letter}{Editorial Office\\
+Plant Phenomics\\
+}
+
+\opening{Dear Editor,}
+
+We are pleased to submit our manuscript entitled ``PlantHGNN: Hyperparameter Optimization for Plant Genome Prediction via Multi-View Graph Neural Networks'' for consideration for publication in Plant Phenomics.
+
+Genomic prediction (GP) is essential for accelerating plant breeding programs, and Graph Neural Networks (GNNs) have shown significant potential in this domain. However, the effective integration of multiple biological networks remains challenging. In this study, we present PlantHGNN, a multi-view graph neural network framework that systematically incorporates Protein-Protein Interaction (PPI) and Gene Ontology (GO) networks for plant genome prediction.
+
+Our key contributions include:
+
+\begin{enumerate}
+    \item A comprehensive hyperparameter optimization analysis for plant genome prediction, identifying an optimal configuration (d\_model=256) that achieves competitive performance on the rice GSTP007 dataset.
+
+    \item Systematic ablation studies demonstrating the contribution of different network combinations, with the multi-view approach (PPI+KEGG) achieving the best performance.
+
+    \item Extensive validation including 5-fold cross-validation across multiple seeds, comparison with baseline methods (GBLUP, DNNGP, NetGP, Random Forest, XGBoost), and multi-trait evaluation across six agronomic traits.
+
+    \item Statistical significance testing confirming the robustness of our findings.
+\end{enumerate}
+
+We believe this work addresses an important gap in the literature regarding hyperparameter optimization for GNN-based genomic prediction methods. Our systematic approach and comprehensive evaluation provide practical guidelines for researchers in the field.
+
+This manuscript is original, has not been published previously, and is not under consideration elsewhere. All authors have approved the submission and agree to the publication policies of Plant Phenomics.
+
+We suggest the following experts as potential reviewers:
+\begin{itemize}
+    \item Dr. [Name], [Institution], [Email] - Expert in genomic prediction and plant breeding
+    \item Dr. [Name], [Institution], [Email] - Expert in graph neural networks and bioinformatics
+    \item Dr. [Name], [Institution], [Email] - Expert in machine learning for agriculture
+\end{itemize}
+
+We would like to exclude the following reviewers due to potential conflicts of interest:
+\begin{itemize}
+    \item [Name and reason]
+\end{itemize}
+
+Thank you for considering our submission. We look forward to your response.
+
+\closing{Sincerely,}
+
+\end{letter}
+\end{document}

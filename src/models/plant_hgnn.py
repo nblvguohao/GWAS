@@ -226,11 +226,11 @@ class PlantHGNN(nn.Module):
 
             if self.use_attnres:
                 self.attn_res.register_block_output(h)
-                # 从第二个block开始，用AttnRes增强残差
+                # 从第二个block开始，用AttnRes替代标准残差（Kimi AttnRes原始设计）
                 if block_idx > 0:
                     attn_residual = self.attn_res(block_idx)
                     if attn_residual is not None:
-                        h = h + 0.1 * attn_residual   # 缩放因子避免不稳定
+                        h = h + attn_residual   # 全量AttnRes残差
 
         # ── 4. 预测 ───────────────────────────────────────────────────────────
         h = self.final_norm(h)
